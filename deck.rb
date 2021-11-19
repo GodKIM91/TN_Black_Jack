@@ -5,7 +5,6 @@ class Deck
   attr_reader :cards
   def initialize
     @cards = init_cards
-    @cards.each { |c| p c}
   end
 
   def init_cards
