@@ -1,2 +1,2 @@
 :: батник для запуска
-ruby deck.rb
+ruby game.rb
