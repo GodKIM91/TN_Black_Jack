@@ -1,7 +1,8 @@
 require_relative 'card'
 
 class Player
-  attr_reader :name, :hand_cards, :money
+  attr_reader :name
+  attr_accessor :money, :hand_cards
 
   START_BALANCE = 100
   BET = 10
@@ -35,18 +36,27 @@ class Player
   def bet
     @money -= BET
   end
-  
-  #берем карту на руку
-  def take_card(deck)
-    @hand_cards << deck.cards.pop
-    show_cards
-  end
-  
-  # метод отобажения карт игрока
-  def show_cards
-    puts "#{self.name}: "
-    @hand_cards.each { |card| puts "#{card}" }
+
+  # проверяем число карт на руках
+  def less_three?
+    hand_cards.size < 3
   end
 
+  def take_card(card)
+    hand_cards << card
+  end
+
+  def busted?
+    score > 21
+  end
+
+  def normal_score
+    score <= 21
+  end
+
+  #проверяем банкрот ли игрок
+  def no_money
+    money == 0
+  end
 end
 
