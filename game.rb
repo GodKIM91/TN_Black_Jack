@@ -150,7 +150,7 @@ class Game
       start_game
     else
       puts "Game over with result #{player.name}: #{player.money}, #{dealer.name}: #{dealer.money}"
-      abort "No money for playing!"
+      abort "Игра завершена!"
     end
   end
 end
