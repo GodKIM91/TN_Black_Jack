@@ -13,7 +13,7 @@ MENU
 
 class Game
   attr_reader :bank, :deck, :dealer, :player, :players
-  attr_accessor :current_player
+  attr_accessor :current_player, :steps
 
   def initialize
     @bank = Bank.new
@@ -32,8 +32,20 @@ class Game
     gets.chomp.to_i
   end
 
+  def welcome_message
+    puts "Welcome to TN casino!"
+  end
+
   def make_choise(menu = nil)
     puts menu if menu
+  end
+
+  def starter_bet
+    players.each { |el| el.bet }
+  end
+
+  def replenish_bank
+    bank.value += 20
   end
 
   def switch_player
@@ -45,7 +57,13 @@ class Game
   end
 
   def check
-    switch_player
+    # инкрементируем переменную @steps, определяя, сколько было сделано переходов хода
+    if @steps < 1
+      switch_player
+      @steps += 1
+    else 
+      raise RuntimeError, "You cant check your step, choose 2 or 3"
+    end
   end
 
   def take2cards
@@ -54,11 +72,12 @@ class Game
 
   def start_game
     @deck = Deck.new
+    @steps = 0
     take2cards
-    players.each { |el| el.bet }
-    bank.value += 20
+    starter_bet
+    replenish_bank
     @current_player = player
-    puts "Welcome to TN casino!"
+    welcome_message
     black_jack
   end
 
@@ -90,6 +109,7 @@ class Game
   def add_card
     if current_player.less_three?
       current_player.take_card(deck.cards.pop)
+      @steps += 1
       switch_player
     else
       raise RuntimeError, "You cant take card. Choose 1 or 3"
@@ -99,8 +119,10 @@ class Game
   def dealer_step
     if current_player.score < 17 && current_player.less_three?
       add_card
-    elsif current_player.score >= 17
+    elsif current_player.score >= 17 && steps < 2
       switch_player
+    elsif current_player.score >= 17 && steps > 2
+      lets_open
     end
   end
 
@@ -128,18 +150,27 @@ class Game
       puts "Draw!"
       players.each {|el| el.money += bank.value/2}
     elsif player_win
-      puts "Winner #{player.name}!!!"
+      puts "Winner is #{player.name}!!!"
       player.money += bank.value
     elsif dealer_win
-      puts "Winner #{dealer.name}!!!"
+      puts "Winner is #{dealer.name}!!!"
       dealer.money += bank.value
     end
+    show_balance
     restart
+  end
+  
+  def show_balance
+    puts "Баланс игроков:\n#{player.name} - #{player.money}$\n#{dealer.name} - #{dealer.money}$"
   end
 
   def lose
     # проверка, есть ли проигравшие все деньги игроки
     players.map { |el| el.no_money }.include?(true)
+  end
+
+  def game_over
+    abort "Game over with result #{player.name}: #{player.money}$, #{dealer.name}: #{dealer.money}$"
   end
 
   def restart
@@ -148,9 +179,12 @@ class Game
       players.each { |el| el.hand_cards = [] }
       bank.value = 0
       start_game
+    elsif lose
+      lose_player = players.select { |el| el.money.zero? }
+      puts "#{lose_player.first.name} cant continue game, not enough money!"
+      game_over
     else
-      puts "Game over with result #{player.name}: #{player.money}, #{dealer.name}: #{dealer.money}"
-      abort "Игра завершена!"
+      game_over
     end
   end
 end
