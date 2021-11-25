@@ -42,6 +42,7 @@ class Game
 
   def starter_bet
     players.each { |el| el.bet }
+    replenish_bank
   end
 
   def replenish_bank
@@ -72,11 +73,10 @@ class Game
 
   def start_game
     @deck = Deck.new
-    @steps = 0
     take2cards
     starter_bet
-    replenish_bank
     @current_player = player
+    @steps = 0
     welcome_message
     black_jack
   end
